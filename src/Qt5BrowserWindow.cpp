@@ -20,14 +20,12 @@ BrowserWindow::BrowserWindow(const QUrl &url) : QMainWindow(nullptr)
     view->setRenderHint(QPainter::TextAntialiasing, false);
     view->setRenderHint(QPainter::Antialiasing, false);
 
-    // Show Web Inspector
-    view->settings()->setAttribute(QWebSettings::DeveloperExtrasEnabled, true);
-
     view->setUrl(url);
 
     setCentralWidget(view);
     setWindowState(Qt::WindowFullScreen | Qt::WindowActive);
     setWindowFlags(Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
+    QApplication::setOverrideCursor(Qt::BlankCursor);
 
     connect(view, &QWebView::loadFinished, this,
             [this](bool ok)
