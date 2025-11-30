@@ -15,7 +15,6 @@ add_executable(kiosk-browser
     src/BrowserWindow.h
 )
 
-
 target_link_libraries(kiosk-browser
     Qt6::Widgets
     Qt6::WebEngineWidgets
