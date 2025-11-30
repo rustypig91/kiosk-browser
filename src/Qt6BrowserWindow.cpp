@@ -1,4 +1,4 @@
-#include "BrowserWindow.h"
+#include "Qt6BrowserWindow.h"
 
 BrowserWindow::BrowserWindow(const QUrl &url) : QMainWindow(nullptr)
 {

@@ -1,5 +1,10 @@
-#include "BrowserWindow.h"
 #include <QApplication>
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#include "Qt6BrowserWindow.h"
+#else
+#include "Qt5BrowserWindow.h"
+#endif
 
 int main(int argc, char *argv[])
 {

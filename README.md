@@ -18,6 +18,13 @@ sudo apt update
 sudo apt install qt6-base-dev qt6-webengine-dev cmake build-essential
 ```
 
+or for Qt5
+```bash
+sudo apt update
+sudo apt install libqt5websockets5-dev libqt5webkit5-dev
+```
+
+
 ### Building the project
 
 Run these commands from the project root:
