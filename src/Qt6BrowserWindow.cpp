@@ -1,11 +1,6 @@
 #include "Qt6BrowserWindow.h"
-#include <QWebEngineProfile>
-#include <QWebEngineCookieStore>
-#include <QNetworkCookie>
 #include <QUrl>
-#include <QStandardPaths>
-#include <QDir>
-#include <qapplication.h>
+#include <QWebEngineProfile>
 
 #ifndef REMOTE_DEBUGGING_PORT
 #define REMOTE_DEBUGGING_PORT "5001"
@@ -22,15 +17,14 @@ BrowserWindow::BrowserWindow(const QUrl &url) : QMainWindow(nullptr)
 #ifdef DEBUG
     qputenv("QTWEBENGINE_REMOTE_DEBUGGING", "0.0.0.0:" REMOTE_DEBUGGING_PORT);
 #else
-    QApplication::setOverrideCursor(Qt::BlankCursor);
-    QGuiApplication::setOverrideCursor(QCursor(Qt::BlankCursor));
     setCursor(Qt::BlankCursor);
 #endif
-    QWebEngineProfile *profile = new QWebEngineProfile("kiosk-browser-profile");
+    QWebEngineProfile *profile = new QWebEngineProfile("kiosk-browser-profile", this);
     profile->setPersistentCookiesPolicy(QWebEngineProfile::ForcePersistentCookies);
     profile->setHttpCacheType(QWebEngineProfile::DiskHttpCache);
 
-    view = new QWebEngineView(profile);
+    view = new QWebEngineView();
+    view->setPage(new QWebEnginePage(profile, view));
     view->setUrl(url);
 
     qDebug("PersistentStoragePath: %s", profile->persistentStoragePath().toUtf8().constData());
