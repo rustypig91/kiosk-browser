@@ -7,6 +7,13 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    add_compile_definitions(DEBUG)
+    set(CMAKE_VERBOSE_MAKEFILE ON)
+else()
+    add_compile_definitions(NDEBUG QT_NO_DEBUG_OUTPUT)
+endif()
+
 option(USE_QT6 "Build with Qt6" OFF)
 
 if(USE_QT6)
