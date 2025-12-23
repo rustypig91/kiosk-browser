@@ -1,6 +1,7 @@
 #include "Qt6BrowserWindow.h"
 #include <QUrl>
 #include <QWebEngineProfile>
+#include <QApplication>
 
 #ifndef REMOTE_DEBUGGING_PORT
 #define REMOTE_DEBUGGING_PORT "5001"
@@ -19,11 +20,11 @@ BrowserWindow::BrowserWindow(const QUrl &url) : QMainWindow(nullptr)
 #else
     setCursor(Qt::BlankCursor);
 #endif
-    QWebEngineProfile *profile = new QWebEngineProfile("kiosk-browser-profile", this);
+    QWebEngineProfile *profile = new QWebEngineProfile(QCoreApplication::applicationName(), this);
     profile->setPersistentCookiesPolicy(QWebEngineProfile::ForcePersistentCookies);
     profile->setHttpCacheType(QWebEngineProfile::DiskHttpCache);
 
-    view = new QWebEngineView();
+    view = new QWebEngineView(this);
     view->setPage(new QWebEnginePage(profile, view));
     view->setUrl(url);
 
