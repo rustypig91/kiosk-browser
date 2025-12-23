@@ -10,6 +10,10 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
+    // Ensure stable AppDataLocation for Qt6 persistence
+    QCoreApplication::setOrganizationName("rustypig91");
+    QCoreApplication::setApplicationName("kiosk-browser");
+
     // Enforce URL is provided as a command line argument
     if (argc < 2 || !QUrl(argv[1]).isValid())
     {

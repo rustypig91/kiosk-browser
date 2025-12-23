@@ -1,6 +1,0 @@
-{
-    // Use compile_commands.json for clangd
-    "clangd.arguments": [
-        "--compile-commands-dir=${workspaceFolder}"
-    ]
-}

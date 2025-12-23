@@ -21,7 +21,7 @@ sudo apt install qt6-base-dev qt6-webengine-dev cmake build-essential
 or for Qt5
 ```bash
 sudo apt update
-sudo apt install libqt5websockets5-dev libqt5webkit5-dev
+sudo apt install libqt5websockets5-dev libqt5webkit5-dev cmake build-essential
 ```
 
 
@@ -32,7 +32,7 @@ Run these commands from the project root:
 ```bash
 mkdir build
 cd build
-cmake ..
+cmake .. # or cmake .. -DUSE_QT6=1
 make
-./kiosk-browser  # Or .\kiosk-browser.exe on Windows
+./kiosk-browser
 ```
