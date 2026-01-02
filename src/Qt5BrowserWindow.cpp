@@ -77,7 +77,7 @@ BrowserWindow::BrowserWindow(const QUrl &url) : QMainWindow(nullptr)
     QDir().mkpath(baseDataDir);
     const QString cookiesFile = baseDataDir + "/cookies.txt";
 
-    qDebug("Using cookie file: %s", cookiesFile.toUtf8().constData());
+    qInfo("Using cookie file: %s", cookiesFile.toUtf8().constData());
 
     auto *nam = view->page()->networkAccessManager();
     auto *jar = new PersistentCookieJar(cookiesFile, nam);

@@ -28,8 +28,8 @@ BrowserWindow::BrowserWindow(const QUrl &url) : QMainWindow(nullptr)
     view->setPage(new QWebEnginePage(profile, view));
     view->setUrl(url);
 
-    qDebug("PersistentStoragePath: %s", profile->persistentStoragePath().toUtf8().constData());
-    qDebug("CachePath: %s", profile->cachePath().toUtf8().constData());
+    qInfo("PersistentStoragePath: %s", profile->persistentStoragePath().toUtf8().constData());
+    qInfo("CachePath: %s", profile->cachePath().toUtf8().constData());
 
     setCentralWidget(view);
     setWindowState(Qt::WindowFullScreen | Qt::WindowActive);
