@@ -23,9 +23,14 @@ namespace
 class PersistentCookieJar : public QNetworkCookieJar
 {
   public:
-    explicit PersistentCookieJar(const QString &filePath, QObject *parent = nullptr)
-        : QNetworkCookieJar(parent), m_filePath(filePath)
+    explicit PersistentCookieJar(QObject *parent = nullptr)
+        : QNetworkCookieJar(parent)
     {
+        QString baseDataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+        QDir().mkpath(baseDataDir);
+        m_filePath = QDir(baseDataDir).filePath("cookies.txt");
+        qInfo("Using cookie file: %s", m_filePath.toUtf8().constData());
+
         load();
     }
 
@@ -114,29 +119,8 @@ BrowserWindow::BrowserWindow(const QUrl &url) : QMainWindow(nullptr)
     view = new QWebView(this);
 
     // Enable persistent cookies via a custom cookie jar
-    QString baseDataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-    if (baseDataDir.isEmpty())
-    {
-        // Fallback to generic data location when AppDataLocation cannot be resolved
-        QString generic = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
-        if (!generic.isEmpty())
-        {
-            baseDataDir = QDir(generic).filePath(QCoreApplication::organizationName() + "/" +
-                                                 QCoreApplication::applicationName());
-        }
-    }
-
-    bool madePath = !baseDataDir.isEmpty() && QDir().mkpath(baseDataDir);
-    const QString cookiesFile = QDir(baseDataDir).filePath("cookies.txt");
-
-    qInfo("Using cookie file: %s", cookiesFile.toUtf8().constData());
-    if (!madePath)
-    {
-        qWarning("Failed to create cookie directory: %s", baseDataDir.toUtf8().constData());
-    }
-
     auto *nam = view->page()->networkAccessManager();
-    auto *jar = new PersistentCookieJar(cookiesFile, nam);
+    auto *jar = new PersistentCookieJar(nam);
     nam->setCookieJar(jar);
 
     view->setRenderHint(QPainter::SmoothPixmapTransform, false);
