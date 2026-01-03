@@ -32,7 +32,7 @@ Run these commands from the project root:
 ```bash
 mkdir build
 cd build
-cmake .. # or cmake .. -DUSE_QT6=1
+cmake .. # or cmake .. -DUSE_QT6=1 or cmake -DCMAKE_BUILD_TYPE=Debug ..
 make
 ./kiosk-browser
 ```
