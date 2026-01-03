@@ -23,8 +23,7 @@ namespace
 class PersistentCookieJar : public QNetworkCookieJar
 {
   public:
-    explicit PersistentCookieJar(QObject *parent = nullptr)
-        : QNetworkCookieJar(parent)
+    explicit PersistentCookieJar(QObject *parent = nullptr) : QNetworkCookieJar(parent)
     {
         QString baseDataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
         QDir().mkpath(baseDataDir);
@@ -47,7 +46,6 @@ class PersistentCookieJar : public QNetworkCookieJar
 
     void load()
     {
-
         if (!QFile::exists(m_filePath))
         {
             QFile create(m_filePath);
@@ -67,6 +65,7 @@ class PersistentCookieJar : public QNetworkCookieJar
         if (!f.open(QIODevice::ReadOnly))
         {
             qWarning("Cookie load failed: cannot open %s", m_filePath.toUtf8().constData());
+            return;
         }
 
         QList<QNetworkCookie> list;
