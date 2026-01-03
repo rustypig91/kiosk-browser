@@ -4,10 +4,10 @@
 #include <QMenu>
 #include <QWebSocketServer>
 #include <QWidget>
-#include <QtWebKitWidgets/QWebFrame>
-#include <QtWebKitWidgets/QWebView>
-#include <QtWebKitWidgets/QWebInspector>
 #include <QtWebKit/QWebSettings>
+#include <QtWebKitWidgets/QWebFrame>
+#include <QtWebKitWidgets/QWebInspector>
+#include <QtWebKitWidgets/QWebView>
 
 class BrowserWindow : public QMainWindow
 {
@@ -20,6 +20,8 @@ class BrowserWindow : public QMainWindow
     QWebInspector *inspector;
 
   private slots:
+#ifdef DEBUG
     void showContextMenu(const QPoint &pos);
     void toggleDeveloperTools();
+#endif
 };

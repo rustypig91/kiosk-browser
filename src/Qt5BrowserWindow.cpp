@@ -14,6 +14,7 @@
 #include <QSaveFile>
 #include <QStandardPaths>
 #include <QTimer>
+#include <QUrl>
 #include <QWebSocket>
 #include <QWebSocketServer>
 
@@ -26,6 +27,17 @@ class PersistentCookieJar : public QNetworkCookieJar
         : QNetworkCookieJar(parent), m_filePath(filePath)
     {
         load();
+    }
+
+    bool setCookiesFromUrl(const QList<QNetworkCookie> &cookieList, const QUrl &url) override
+    {
+        const bool accepted = QNetworkCookieJar::setCookiesFromUrl(cookieList, url);
+        // Persist immediately to avoid losing cookies on abrupt exit
+        if (accepted)
+        {
+            save();
+        }
+        return accepted;
     }
 
     void load()
@@ -90,7 +102,6 @@ class PersistentCookieJar : public QNetworkCookieJar
         }
 
         qDebug("Saved %d cookies to %s", list.size(), m_filePath.toUtf8().constData());
-
     }
 
   private:
@@ -127,7 +138,6 @@ BrowserWindow::BrowserWindow(const QUrl &url) : QMainWindow(nullptr)
     auto *nam = view->page()->networkAccessManager();
     auto *jar = new PersistentCookieJar(cookiesFile, nam);
     nam->setCookieJar(jar);
-    QObject::connect(qApp, &QCoreApplication::aboutToQuit, jar, [jar]() { jar->save(); });
 
     view->setRenderHint(QPainter::SmoothPixmapTransform, false);
     view->setRenderHint(QPainter::TextAntialiasing, false);
@@ -139,13 +149,6 @@ BrowserWindow::BrowserWindow(const QUrl &url) : QMainWindow(nullptr)
     setWindowState(Qt::WindowFullScreen | Qt::WindowActive);
     setWindowFlags(Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
 
-#ifndef DEBUG
-    QApplication::setOverrideCursor(Qt::BlankCursor);
-#else
-    view->settings()->setAttribute(QWebSettings::DeveloperExtrasEnabled, true);
-#endif
-    // QApplication::setOverrideCursor(Qt::BlankCursor);
-
     connect(view, &QWebView::loadFinished, this,
             [this](bool ok)
             {
@@ -154,7 +157,10 @@ BrowserWindow::BrowserWindow(const QUrl &url) : QMainWindow(nullptr)
                     view->setHtml("<h1>Failed to load page</h1>");
                 }
             });
-#ifdef DEBUG
+
+#ifndef DEBUG
+    QApplication::setOverrideCursor(Qt::BlankCursor);
+#else
     QWebSocketServer *consoleServer = new QWebSocketServer(QStringLiteral("Debug Console Server"),
                                                            QWebSocketServer::NonSecureMode, this);
 
