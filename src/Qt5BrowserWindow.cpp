@@ -23,12 +23,16 @@ namespace
 class PersistentCookieJar : public QNetworkCookieJar
 {
   public:
-    explicit PersistentCookieJar(QObject *parent = nullptr) : QNetworkCookieJar(parent)
+    explicit PersistentCookieJar(QObject *parent = nullptr)
+        : QNetworkCookieJar(parent), m_saveTimer(new QTimer(this)), m_saveDebounceMs(1000)
     {
         QString baseDataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
         QDir().mkpath(baseDataDir);
         m_filePath = QDir(baseDataDir).filePath("cookies.txt");
         qInfo("Using cookie file: %s", m_filePath.toUtf8().constData());
+
+        m_saveTimer->setSingleShot(true);
+        QObject::connect(m_saveTimer, &QTimer::timeout, this, [this]() { save(); });
 
         load();
     }
@@ -36,11 +40,8 @@ class PersistentCookieJar : public QNetworkCookieJar
     bool setCookiesFromUrl(const QList<QNetworkCookie> &cookieList, const QUrl &url) override
     {
         const bool accepted = QNetworkCookieJar::setCookiesFromUrl(cookieList, url);
-        // Persist immediately to avoid losing cookies on abrupt exit
         if (accepted)
-        {
-            save();
-        }
+            scheduleSave();
         return accepted;
     }
 
@@ -48,17 +49,8 @@ class PersistentCookieJar : public QNetworkCookieJar
     {
         if (!QFile::exists(m_filePath))
         {
-            QFile create(m_filePath);
-            if (create.open(QIODevice::WriteOnly | QIODevice::Truncate))
-            {
-                create.close();
-                qInfo("Created new cookie file: %s", m_filePath.toUtf8().constData());
-            }
-            else
-            {
-                qWarning("Cookie load failed: cannot create %s", m_filePath.toUtf8().constData());
-                return;
-            }
+             qInfo("Cookie file does not exist yet: %s", m_filePath.toUtf8().constData());
+             return;
         }
 
         QFile f(m_filePath);
@@ -110,6 +102,13 @@ class PersistentCookieJar : public QNetworkCookieJar
 
   private:
     QString m_filePath;
+        QTimer *m_saveTimer;
+        int m_saveDebounceMs;
+
+        void scheduleSave()
+        {
+                m_saveTimer->start(m_saveDebounceMs);
+        }
 };
 } // namespace
 
@@ -121,6 +120,7 @@ BrowserWindow::BrowserWindow(const QUrl &url) : QMainWindow(nullptr)
     auto *nam = view->page()->networkAccessManager();
     auto *jar = new PersistentCookieJar(nam);
     nam->setCookieJar(jar);
+    QObject::connect(qApp, &QCoreApplication::aboutToQuit, jar, [jar]() { jar->save(); });
 
     view->setRenderHint(QPainter::SmoothPixmapTransform, false);
     view->setRenderHint(QPainter::TextAntialiasing, false);
