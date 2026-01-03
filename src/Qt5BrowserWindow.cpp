@@ -63,6 +63,8 @@ class PersistentCookieJar : public QNetworkCookieJar
                 list.push_back(c);
         }
         setAllCookies(list);
+
+        qDebug("Loaded %d cookies from %s", list.size(), m_filePath.toUtf8().constData());
     }
 
     void save() const
@@ -80,11 +82,15 @@ class PersistentCookieJar : public QNetworkCookieJar
             f.write(c.toRawForm());
             f.write("\n");
         }
-        qDebug("Saving %d cookies to %s", list.size(), m_filePath.toUtf8().constData());
+
         if (!f.commit())
         {
             qWarning("Cookie save failed: commit error for %s", m_filePath.toUtf8().constData());
+            return;
         }
+
+        qDebug("Saved %d cookies to %s", list.size(), m_filePath.toUtf8().constData());
+
     }
 
   private:
