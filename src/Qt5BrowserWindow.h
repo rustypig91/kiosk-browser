@@ -6,6 +6,8 @@
 #include <QWidget>
 #include <QtWebKitWidgets/QWebFrame>
 #include <QtWebKitWidgets/QWebView>
+#include <QtWebKitWidgets/QWebInspector>
+#include <QtWebKit/QWebSettings>
 
 class BrowserWindow : public QMainWindow
 {
@@ -15,4 +17,9 @@ class BrowserWindow : public QMainWindow
 
   private:
     QWebView *view;
+    QWebInspector *inspector;
+
+  private slots:
+    void showContextMenu(const QPoint &pos);
+    void toggleDeveloperTools();
 };
