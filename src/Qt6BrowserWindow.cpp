@@ -7,14 +7,19 @@
 #define REMOTE_DEBUGGING_PORT "5001"
 #endif
 
-BrowserWindow::BrowserWindow(const QUrl &url) : QMainWindow(nullptr)
+BrowserWindow::BrowserWindow(const QUrl &url, bool ignoreCertErrors) : QMainWindow(nullptr)
 {
     // Optimize QtWebEngine performance by setting Chromium flags
-    qputenv("QTWEBENGINE_CHROMIUM_FLAGS",
-            "--disable-gpu-vsync --disable-smooth-scrolling --disable-accelerated-2d-canvas "
-            "--disable-background-timer-throttling --disable-renderer-backgrounding "
-            "--disable-features=PaintHolding,SitePerProcess,TouchpadOverscrollHistoryNavigation "
-            "--no-sandbox");
+    QByteArray chromiumFlags =
+        "--disable-gpu-vsync --disable-smooth-scrolling --disable-accelerated-2d-canvas "
+        "--disable-background-timer-throttling --disable-renderer-backgrounding "
+        "--disable-features=PaintHolding,SitePerProcess,TouchpadOverscrollHistoryNavigation "
+        "--no-sandbox";
+    if (ignoreCertErrors)
+    {
+        chromiumFlags += " --ignore-certificate-errors";
+    }
+    qputenv("QTWEBENGINE_CHROMIUM_FLAGS", chromiumFlags);
 #ifdef DEBUG
     qputenv("QTWEBENGINE_REMOTE_DEBUGGING", "0.0.0.0:" REMOTE_DEBUGGING_PORT);
 #else

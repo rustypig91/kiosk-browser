@@ -9,9 +9,11 @@
 #include <QJsonObject>
 #include <QNetworkCookie>
 #include <QNetworkCookieJar>
+#include <QNetworkReply>
 #include <QNetworkProxy>
 #include <QProcess>
 #include <QSaveFile>
+#include <QSslError>
 #include <QStandardPaths>
 #include <QTimer>
 #include <QUrl>
@@ -109,7 +111,7 @@ class PersistentCookieJar : public QNetworkCookieJar
 };
 } // namespace
 
-BrowserWindow::BrowserWindow(const QUrl &url) : QMainWindow(nullptr)
+BrowserWindow::BrowserWindow(const QUrl &url, bool ignoreCertErrors) : QMainWindow(nullptr)
 {
     view = new QWebView(this);
 
@@ -118,6 +120,20 @@ BrowserWindow::BrowserWindow(const QUrl &url) : QMainWindow(nullptr)
     auto *jar = new PersistentCookieJar(nam);
     nam->setCookieJar(jar);
     QObject::connect(qApp, &QCoreApplication::aboutToQuit, jar, [jar]() { jar->save(); });
+
+    // Optionally ignore SSL certificate errors for all network requests
+    if (ignoreCertErrors)
+    {
+        QObject::connect(
+            nam,
+            static_cast<void (QNetworkAccessManager::*)(QNetworkReply *, const QList<QSslError> &)>(&QNetworkAccessManager::sslErrors),
+            this,
+            [](QNetworkReply *reply, const QList<QSslError> &errors) {
+                Q_UNUSED(errors);
+                if (reply)
+                    reply->ignoreSslErrors();
+            });
+    }
 
     view->setRenderHint(QPainter::SmoothPixmapTransform, false);
     view->setRenderHint(QPainter::TextAntialiasing, false);
