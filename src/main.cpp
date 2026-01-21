@@ -11,7 +11,7 @@ int main(int argc, char *argv[])
 {
     // Parse our app-specific flags BEFORE creating QApplication because Qt/QtWebEngine
     // may consume/remove Chromium-style "--" switches from the argument list.
-    bool noCheckCert = false;
+    bool ignoreCertErrors = false;
     QVector<char *> filtered;
     filtered.reserve(argc);
     for (int i = 0; i < argc; ++i)
@@ -22,7 +22,8 @@ int main(int argc, char *argv[])
         }
         else if (std::strcmp(argv[i], "--ignore-certificate-errors") == 0)
         {
-            noCheckCert = true;
+            qWarning("Ignoring SSL certificate errors as per command-line argument");
+            ignoreCertErrors = true;
         }
         else if (std::strncmp(argv[i], "--help", 6) == 0 || std::strcmp(argv[i], "-h") == 0)
         {
@@ -64,12 +65,12 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    if (noCheckCert)
+    if (ignoreCertErrors)
     {
         qWarning("Warning: SSL certificate errors will be ignored.");
     }
 
-    BrowserWindow window(QUrl{url}, noCheckCert);
+    BrowserWindow window(QUrl{url}, ignoreCertErrors);
     window.show();
 
     return app.exec();
