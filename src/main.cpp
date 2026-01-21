@@ -1,4 +1,5 @@
 #include <QApplication>
+#include <cstring>
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 #include "Qt6BrowserWindow.h"
@@ -8,38 +9,68 @@
 
 int main(int argc, char *argv[])
 {
-    QApplication app(argc, argv);
+    // Parse our app-specific flags BEFORE creating QApplication because Qt/QtWebEngine
+    // may consume/remove Chromium-style "--" switches from the argument list.
+    bool ignoreCertErrors = false;
+    QVector<char *> filtered;
+    filtered.reserve(argc);
+    for (int i = 0; i < argc; ++i)
+    {
+        if (i == 0)
+        {
+            filtered.push_back(argv[i]);
+        }
+        else if (std::strcmp(argv[i], "--ignore-certificate-errors") == 0)
+        {
+            qWarning("Ignoring SSL certificate errors as per command-line argument");
+            ignoreCertErrors = true;
+        }
+        else if (std::strncmp(argv[i], "--help", 6) == 0 || std::strcmp(argv[i], "-h") == 0)
+        {
+            qInfo("Usage: %s [--ignore-certificate-errors] <url>\n"
+                  "  --ignore-certificate-errors   Ignore SSL certificate errors (not recommended)\n"
+                  "  -h, --help                    Show this help message\n",
+                  argv[0]);
+            return 0;
+        }
+        else
+        {
+            filtered.push_back(argv[i]);
+        }
+    }
+
+    int newArgc = filtered.size();
+    QApplication app(newArgc, filtered.data());
 
     // Ensure stable AppDataLocation for Qt6 persistence
     QCoreApplication::setOrganizationName("rustypig91");
     QCoreApplication::setApplicationName("kiosk-browser");
 
-    // Enforce URL is provided as a command line argument
-    if (argc < 2 || !QUrl(argv[1]).isValid())
+    // Find the first http(s) URL among remaining args
+    QString url;
+    for (int i = 1; i < newArgc; ++i)
     {
-        qCritical("Error: Please provide a valid URL as the first argument.");
-        return 1;
-    }
-
-    QStringList arguments = app.arguments();
-    QString url = nullptr;
-
-    for (const QString &arg : arguments)
-    {
+        const QString arg = QString::fromLocal8Bit(filtered[i]);
         if (arg.startsWith("http"))
         {
+            qInfo("Using URL: %s", arg.toUtf8().constData());
             url = arg;
             break;
         }
     }
 
-    if (url == nullptr)
+    if (url.isEmpty())
     {
-        qCritical("Error: No valid URL found in arguments.");
+        qCritical("Error: Please provide a valid URL as an argument.");
         return 1;
     }
 
-    BrowserWindow window(QUrl{url});
+    if (ignoreCertErrors)
+    {
+        qWarning("Warning: SSL certificate errors will be ignored.");
+    }
+
+    BrowserWindow window(QUrl{url}, ignoreCertErrors);
     window.show();
 
     return app.exec();
